@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Price Search</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; background: #f8f8f8; }
+        .container { background: #fff; padding: 2em; border-radius: 8px; max-width: 500px; margin: auto; box-shadow: 0 2px 8px #0001; }
+        label { display: block; margin-top: 1em; }
+        input, button { width: 100%; padding: 0.5em; margin-top: 0.5em; }
+        #results { margin-top: 2em; }
+        .result-item { background: #f0f0f0; margin-bottom: 1em; padding: 1em; border-radius: 6px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Product Price Search</h2>
+    <form id="searchForm">
+        <label for="product">Product Name:</label>
+        <input type="text" id="product" name="product" required>
+        <label for="country">Country:</label>
+        <input type="text" id="country" name="country" required>
+        <button type="submit">Search</button>
+    </form>
+    <div id="results"></div>
+</div>
+<script>
+const form = document.getElementById('searchForm');
+const resultsDiv = document.getElementById('results');
+
+form.onsubmit = async (e) => {
+    e.preventDefault();
+    resultsDiv.innerHTML = '<em>Loading...</em>';
+    const product = document.getElementById('product').value;
+    const country = document.getElementById('country').value;
+    try {
+        const res = await fetch('/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: product, country: country })
+        });
+        if (!res.ok) throw new Error('Server error');
+        const data = await res.json();
+        if (!data.length) {
+            resultsDiv.innerHTML = '<strong>No results found.</strong>';
+            return;
+        }
+        resultsDiv.innerHTML = data.map(item => `
+            <div class="result-item">
+                <a href="${item.link}" target="_blank">${item.link}</a><br>
+                <strong>Price:</strong> ${item.price ? item.price + ' ' + (item.currency || '') : 'N/A'}<br>
+                <strong>Product:</strong> ${item.productName}<br>
+                <strong>Country:</strong> ${item.country}
+            </div>
+        `).join('');
+    } catch (err) {
+        resultsDiv.innerHTML = '<strong>Error: ' + err.message + '</strong>';
+    }
+};
+</script>
+</body>
+</html> 
