@@ -22,12 +22,6 @@ def show_price_statements(soup):
             line = line.strip()
             if 'price' in line.lower() and re.search(r'\d', line):
                 statements.add(line)
-    # if statements:
-    #     for s in sorted(statements):
-    #         print(s)
-    # else:
-    #     print("No price statement found.")
-    
     return statements
 
 if __name__ == "__main__":

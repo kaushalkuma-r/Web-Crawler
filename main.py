@@ -8,16 +8,19 @@ import re
 from typing import Optional
 
 
-def filter_links_with_llm(query, links,country):
+def filter_links_with_llm(query, links, country):
     prompt = (
         f"You are an expert e-commerce assistant. "
         f"Given the product search query: '{query}', and the following list of URLs from a web search, "
-        f"return ONLY the links that are actual e-commerce product pages where a user can buy the product. "
+        f"return ONLY the links that are actual e-commerce product pages where a user can buy the product '{query}' in '{country}'. "
         f"Exclude links to forums, news, Wikipedia, YouTube, Reddit, or any non-shopping sites. "
-        f"Make sure that links do not belong to any different country like they might have different country domain so make sure of that."
-        f"This is the country {country}"
+        f"Exclude links for different products, models, variants, or countries. "
+        f"Exclude links for similar but not exact products. "
+        f"Exclude links for other countries (check domain, language, or content). "
+        f"Only include links where the product and country match exactly. "
         f"Return the filtered links as a JSON array of URLs, nothing else.\n\n"
         f"Query: {query}\n"
+        f"Country: {country}\n"
         f"Links: {json.dumps(links, ensure_ascii=False, indent=2)}"
     )
     response = call_llm(prompt)
@@ -51,10 +54,11 @@ if __name__ == "__main__":
         query = input("Enter product query: ")
         country = input("Enter country code (ISO-2): ")
 
-    print(f"Searching for '{query}' in country '{country}'...")
-    links = get_google_search_links(query, country=country)
+    search_query = f"{query} in {country} only"
+    print(f"Searching for '{search_query}'...")
+    links = get_google_search_links(search_query, num_results=20)
     print(f"Found {len(links)} links. Filtering with LLM...")
-    filtered_links = filter_links_with_llm(query, links,country)
+    filtered_links = filter_links_with_llm(query, links, country)
     # Clean URLs
     cleaned_links = [clean_url(url) for url in filtered_links if url.strip()]
     print(f"Filtered links ({len(cleaned_links)}):")
