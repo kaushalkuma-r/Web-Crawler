@@ -7,8 +7,10 @@ import json
 from helpers import filter_links_with_llm, clean_url, get_google_search_links, scrape_products
 import re
 import os
+from mangum import Mangum
 
 app = FastAPI()
+handler = Mangum(app)
 
 class SearchRequest(BaseModel):
     query: str
